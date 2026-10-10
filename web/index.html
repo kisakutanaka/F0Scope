@@ -4,12 +4,47 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>F0 Scope</title>
+  <link rel="stylesheet" href="./style.css">
 </head>
 <body>
   <h1>F0 Scope</h1>
-  <button id="start">開始</button>
-  <pre id="output"></pre>
-  <pre id="debug" hidden></pre>
+  <button id="start" class="primary">開始</button>
+  <p id="error" hidden></p>
+
+  <section>
+    <label for="reference">基準ピッチ A4: <output id="reference-value">440.0 Hz</output></label>
+    <input type="range" id="reference" min="415" max="466" step="0.1" value="440">
+    <div class="buttons">
+      <button data-delta="-1">−1</button>
+      <button data-delta="-0.1">−0.1</button>
+      <button data-delta="0.1">+0.1</button>
+      <button data-delta="1">+1</button>
+      <button id="reference-reset">440Hzに戻す</button>
+    </div>
+    <label for="hold">ピークホールド時間: <output id="hold-value">1.0 秒</output></label>
+    <input type="range" id="hold" min="0.2" max="5" step="0.1" value="1">
+  </section>
+
+  <section>
+    <h2>基音 (F0)</h2>
+    <pre id="fundamental" class="pitch large"></pre>
+    <pre id="fundamental-detail" class="detail"></pre>
+    <h2>最大ピーク</h2>
+    <pre id="strongest" class="pitch"></pre>
+    <pre id="strongest-detail" class="detail"></pre>
+  </section>
+
+  <section>
+    <button id="lap">ラップ記録 (0件)</button>
+    <pre id="laps" class="detail"></pre>
+  </section>
+
+  <section>
+    <h2>スペクトル</h2>
+    <canvas id="spectrum"></canvas>
+  </section>
+
+  <pre id="debug" class="detail" hidden></pre>
   <script type="module" src="./main.js"></script>
 </body>
 </html>

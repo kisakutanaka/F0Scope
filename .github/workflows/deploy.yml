@@ -23,6 +23,7 @@ jobs:
           tool: wasm-pack
       - run: cargo test --manifest-path core/Cargo.toml
       - run: wasm-pack test --node core
+      - run: node --test 'tests/*.test.js'
       - run: wasm-pack build core --release --target web --out-dir ../web/pkg
       - uses: actions/upload-pages-artifact@v5
         with:
