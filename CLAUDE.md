@@ -16,7 +16,7 @@
 ```
 core/            Rust クレート pitch_core（wasm-bindgen で WASM 化）
   src/lib.rs     公開 API（analyze, empty_reading_text）と format_reading
-  src/fft.rs, pitch.rs, pitch_detect.rs   移植元から無改変コピー
+  src/fft.rs, pitch.rs, pitch_detect.rs   移植元からコピー（pitch_detect.rs の dtft_magnitude のみ変更）
 web/             GitHub Pages で公開する静的ファイル（バンドラなし、参照はすべて相対パス）
   pkg/           wasm-pack の出力（.gitignore 対象、CI で生成）
 tests/           JS のテスト（node --test）
@@ -25,7 +25,9 @@ tests/           JS のテスト（node --test）
 
 ## 守ること
 
-- `core/src/{fft,pitch,pitch_detect}.rs` は編集しない。移植元が更新されたら再コピーで追従する。アルゴリズムを JS/TS で書き直さない
+- `core/src/{fft,pitch,pitch_detect}.rs` は移植元のコピー。移植元が更新されたら再コピーで追従する。アルゴリズムを JS/TS で書き直さない
+- 例外: `pitch_detect.rs` の `dtft_magnitude` は、サンプルごとの cos/sin を f64 の回転の漸化式に置き換えている（WASM では cos/sin が遅く、スマホで解析 4〜5ms かかっていたため。参照値との差は最大 0.003 cent）。再コピー時はこの変更を当て直す。ロジックの最適化は golden テスト（±0.05 cent）が通る範囲ならユーザーの了承済み
+- 速度の目標: 解析1回が更新間隔（約 21ms）に十分収まること
 - 変更禁止パラメータ（ユーザーの明示的な指示がない限り変えない）:
   - チャンクサイズ 1024（JS の `CHUNK_SIZE`）。チャンクの重ね合わせもしない
   - コア内の定数（`COARSE_CANDIDATES = 5`, `FUNDAMENTAL_THRESHOLD_RATIO = 0.2`, `ZOOM_SEARCH_WIDTH_IN_BINS = 1.0`, `ZOOM_SEARCH_POINTS = 21`, `COARSE_SPECTRUM_DISPLAY_MAX_HZ = 5000`, Hann 窓）

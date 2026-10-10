@@ -1,4 +1,5 @@
-// fft.rs / pitch.rs / pitch_detect.rs は FFTexample から無改変でコピーしたもの。編集しないこと。
+// fft.rs / pitch.rs / pitch_detect.rs は FFTexample からコピーしたもの。
+// pitch_detect.rs の dtft_magnitude だけ WASM での速度のために変更している(CLAUDE.md 参照)。
 // デスクトップ版でだけ使う関数があるので dead_code 警告は抑える。
 #[allow(dead_code)]
 mod fft;

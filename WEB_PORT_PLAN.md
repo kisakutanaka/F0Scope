@@ -23,7 +23,7 @@
 |---|---|
 | 精度 | 同じサンプル列・サンプルレートを入れたら、デスクトップ版と同じ基音/最大ピーク周波数（差 ±0.05 cent 以内）、同じ音名・オクターブが出る。→ **アルゴリズムの Rust コードをそのまま WASM にコンパイルして使う**ことで担保する（JS/TS への書き直しは禁止） |
 | 速度（更新頻度・遅延） | 1回の推定に使うサンプル数 1024、重なりなし・抜けなしの連続チャンク。更新間隔 = 1024 / サンプルレート（48kHz で約 21.3ms ≒ 47回/秒、44.1kHz で約 23.2ms ≒ 43回/秒） |
-| 計算時間 | デスクトップ版の解析1回は約 0.12ms（Apple Silicon・release ビルド実測）。WASM ではスマホでも **1回 2ms 以下**を目標とする（更新間隔 21ms に対して十分な余裕） |
+| 計算時間 | デスクトップ版の解析1回は約 0.12ms（Apple Silicon・release ビルド実測）。WASM ではスマホでも **1回 2ms 以下**を目標とする（更新間隔 21ms に対して十分な余裕）。※Step 4 の実機計測後、「更新間隔に十分収まること」に変更（CLAUDE.md 参照） |
 | 挙動 | 基音選定・ピークホールド・ラップ・基準ピッチ変更の振る舞いがデスクトップ版と同じ。無音判定やスムージングなど、元にない処理を勝手に足さない |
 
 UI の見た目はスマホ向けに作り直してよい（egui をそのまま持ち込む必要はない）。ただし表示する文字列の中身は同じにする（後述: 文字列整形も Rust 側で行う）。
@@ -38,7 +38,7 @@ UI の見た目はスマホ向けに作り直してよい（egui をそのまま
 |---|---|
 | `src/fft.rs` | **無改変でコピー**（`SampleBuffer`, `hann_window`, `magnitude_spectrum`, `find_peak_candidates`, `generate_sine_wave`） |
 | `src/pitch.rs` | **無改変でコピー**（`frequency_to_pitch`, `Pitch` の `Display`） |
-| `src/pitch_detect.rs` | **無改変でコピー**（粗FFT→候補検出→基音選定→局所DTFT→放物線補間。テスト込み） |
+| `src/pitch_detect.rs` | **無改変でコピー**（粗FFT→候補検出→基音選定→局所DTFT→放物線補間。テスト込み）。※後に `dtft_magnitude` のみ高速化のため変更（CLAUDE.md 参照） |
 | `src/gui.rs` | コピーしない。仕様の参照元。`format_reading`/`READING_WIDTH` だけは `lib.rs` に移植する。`PeakHold`・ラップ・UI は JS で再実装する |
 | `src/audio.rs` | コピーしない。cpal はブラウザのマイク入力に使えないため、Web Audio API（AudioWorklet）で置き換える。モノラル化の仕様だけ踏襲する |
 | `src/meter.rs`, `src/main.rs` | 不要 |

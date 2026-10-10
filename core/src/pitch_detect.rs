@@ -139,15 +139,19 @@ fn select_fundamental(candidates: &[(f32, f32)]) -> Option<(f32, f32)> {
 /// FFTのようにビン(サンプル数で決まる離散周波数)に縛られず、任意の周波数の
 /// スペクトル強度を求められるため、追加のサンプルなしに狭い範囲を細かく調べる
 /// 「ズームFFT」として使える(Goertzelアルゴリズムと等価な計算)。
+/// 位相 ωn の cos/sin はサンプルごとに計算せず、1サンプル分の回転を掛けて進める
+/// (WASM では cos/sin がソフトウェア実装で遅いため)。誤差が蓄積しないよう f64 で計算する。
 fn dtft_magnitude(samples: &[f32], sample_rate: f32, frequency: f32) -> f32 {
     let omega = 2.0 * PI * frequency / sample_rate;
-    let (mut re, mut im) = (0.0f32, 0.0f32);
-    for (n, &x) in samples.iter().enumerate() {
-        let phase = omega * n as f32;
-        re += x * phase.cos();
-        im -= x * phase.sin();
+    let (step_sin, step_cos) = (omega as f64).sin_cos();
+    let (mut cos, mut sin) = (1.0f64, 0.0f64);
+    let (mut re, mut im) = (0.0f64, 0.0f64);
+    for &x in samples {
+        re += x as f64 * cos;
+        im -= x as f64 * sin;
+        (cos, sin) = (cos * step_cos - sin * step_sin, sin * step_cos + cos * step_sin);
     }
-    (re * re + im * im).sqrt()
+    (re * re + im * im).sqrt() as f32
 }
 
 /// `center_freq`を中心に`±half_width_hz`の範囲を`num_points`等分し、
